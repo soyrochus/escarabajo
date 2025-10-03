@@ -1,6 +1,6 @@
 # Escarabajo MCP Server
 
-Escarabajo (Scarab) is a local-first MCP server that keeps binary documents in sync with clean Markdown so downstream agents can search, summarise, and reason over source material. Every tool call blocks until the requested Markdown exists and is up to date, making Escarabajo a reliable path oracle rather than a generic file store.
+Escarabajo (Scarab) is a local-first MCP server built for documentation archaeology. It helps AI agents reverse-engineer software and revive outdated manuals by synchronising PDF & Word documents as well as Powerpoint presentations into clean Markdown, then guiding you as you stitch those fragments back into living documentation. Every tool call blocks until the requested Markdown exists and is current, so your agent can assemble books from scattered specs with confidence.
 
 ![Escarabajo logo](image/escarabajo-small.png)
 
