@@ -170,3 +170,8 @@ test-data/
 openai_api_key.env
 .env
 
+# Escarabajo data config files
+.Escarabajo/index.json
+.Escarabajo/index.json.lock
+.Escarabajo/kb/
+.Escarabajo/locks/

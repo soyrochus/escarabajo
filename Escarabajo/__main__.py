@@ -1,8 +1,9 @@
 """Module entry point for Escarabajo.
 
-The module tries to launch a FastMCP stdio server when the dependency is
-installed. Otherwise it falls back to a lightweight JSON-over-stdio loop that
-mirrors the tool surface for local experimentation.
+By default this behaves like the CLI (`python -m Escarabajo sync`). Pass
+`--mcp` to start the MCP server instead. The server prefers the FastMCP
+implementation when installed and otherwise falls back to a lightweight
+JSON-over-stdio loop for local experimentation.
 """
 
 from __future__ import annotations
@@ -36,17 +37,24 @@ def _run_stdio(server: EscarabajoServer) -> None:
 
 
 def entrypoint(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Escarabajo MCP server")
-    parser.add_argument("--cli", action="store_true", help="Run the command line interface instead of the server")
-    parser.add_argument("--repo", type=Path, help="Repository root (defaults to current working directory)")
+    parser = argparse.ArgumentParser(description="Escarabajo entrypoint")
+    parser.add_argument(
+        "--mcp",
+        action="store_true",
+        help="Run the MCP server instead of the CLI",
+    )
+    parser.add_argument(
+        "--repo",
+        type=Path,
+        help="Repository root (defaults to current working directory)",
+    )
     args, remaining = parser.parse_known_args(argv)
 
-    if args.cli:
+    if not args.mcp:
         return cli_main(list(remaining))
 
     repo_root = args.repo or Path.cwd()
     server = create_server(repo_root)
-    # If FastMCP is available, prefer running it. We detect by attribute presence.
     if hasattr(server, "run"):
         server.run()  # type: ignore[attr-defined]
         return 0

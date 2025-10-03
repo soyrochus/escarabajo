@@ -2,7 +2,7 @@
 
 Escarabajo (Scarab) is a local-first MCP server that keeps binary documents in sync with clean Markdown so downstream agents can search, summarise, and reason over source material. Every tool call blocks until the requested Markdown exists and is up to date, making Escarabajo a reliable path oracle rather than a generic file store.
 
-![Escarabajo logo](image/escarabajo-small.png)
+![Escarabajo logo](image/escarabajo.png)
 
 ## Highlights
 - Deterministic `.Escarabajo/kb/` cache with one-to-one `<source> → <source>.md` mapping
@@ -46,6 +46,7 @@ uv pip install -e ".[pdf,ocr]"
 
 # Scan for documents
 escarabajo scan
+# or: python -m Escarabajo scan
 
 # Synchronise everything with OCR enabled for PDFs
 escarabajo sync --ocr
@@ -78,8 +79,8 @@ docx:
 Set `skip_unchanged=true` to avoid redundant work (Escarabajo still overwrites by default) and flip `expose_content=true` when you want to serve Markdown bodies through the `read_text` tool.
 
 ## Running the Server
-- `python -m Escarabajo` starts the MCP server (FastMCP when available, otherwise a lightweight JSON-over-stdio loop)
-- `Escarabajo --cli …` or `escarabajo …` invokes the CLI helpers directly
+- `python -m Escarabajo --mcp` starts the MCP server (FastMCP when available, otherwise a lightweight JSON-over-stdio loop)
+- `python -m Escarabajo <command>` or `escarabajo <command>` runs the CLI helpers directly (running with no command prints the CLI help)
 
 ## Testing
 Use `uv run pytest -q` once fixture documents are in `tests/data/`. The suite covers extraction adapters, mapping logic, sync behaviours, and the CLI surface.
