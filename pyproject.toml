@@ -21,3 +21,8 @@ pdf = [
 [project.scripts]
 Escarabajo = "Escarabajo.cli:main"
 escarabajo = "Escarabajo.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+]

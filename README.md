@@ -88,7 +88,19 @@ Set `skip_unchanged=true` to avoid redundant work (Escarabajo still overwrites b
 - `python -m Escarabajo <command>` or `escarabajo <command>` runs the CLI helpers directly (running with no command prints the CLI help)
 
 ## Testing
-Use `uv run pytest -q` once fixture documents are in `tests/data/`. The suite covers extraction adapters, mapping logic, sync behaviours, and the CLI surface.
+Install the test dependencies first:
+
+```bash
+uv pip install pytest
+```
+
+Then run the test suite once fixture documents are in `tests/data/`:
+
+```bash
+uv run pytest -q
+```
+
+The suite covers extraction adapters, mapping logic, sync behaviours, and the CLI surface.
 
 
 ## Principles of Participation
