@@ -88,11 +88,6 @@ Set `skip_unchanged=true` to avoid redundant work (Escarabajo still overwrites b
 - `python -m Escarabajo <command>` or `escarabajo <command>` runs the CLI helpers directly (running with no command prints the CLI help)
 
 ## Testing
-Install the test dependencies first:
-
-```bash
-uv pip install pytest
-```
 
 Populate `.Escarabajo/kb/` by syncing the authoritative fixtures (for example, run `escarabajo sync-paths ...` or `escarabajo sync`). Once the cache contains the Markdown outputs referenced by `.Escarabajo/index.json`, execute the test suite:
 
