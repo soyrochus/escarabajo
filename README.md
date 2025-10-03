@@ -94,7 +94,7 @@ Install the test dependencies first:
 uv pip install pytest
 ```
 
-Then run the test suite once fixture documents are in `tests/data/`:
+Populate `.Escarabajo/kb/` by syncing the authoritative fixtures (for example, run `escarabajo sync-paths ...` or `escarabajo sync`). Once the cache contains the Markdown outputs referenced by `.Escarabajo/index.json`, execute the test suite:
 
 ```bash
 uv run pytest -q
