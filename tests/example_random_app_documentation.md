@@ -1,202 +1,90 @@
-# RNGenius Test Application Documentation
+# RNGenius Random Application Documentation
 
-## Overview
+## Functional Narrative
 
-The `tests/random_app.py` file implements **RNGenius — The Button-Based Random Number Revolution**, a playful Tkinter-based GUI application designed as a test fixture for the Escarabajo document extraction system. This application serves as a reference implementation of the specifications extracted from the related test documents.
+### Purpose and Promise
 
-![RNGenius Logo](../image/escarabajo.png)
+RNGenius exists as a playful but precise embodiment of **Quantum-Adjacent Algorithmic Non-Determinism**: press a single heroic button and claim a brand-new number. The app relieves decision fatigue by outsourcing tiny choices to randomness, just as the philosophy deck prescribes (“Let Fate Plan Your Day” and “Decision fatigue is real. Randomness is relief.”).
 
-## Purpose
+### Requirements Fulfilment
 
-This application is **specifically created as a test fixture** and should not be confused with production software. It demonstrates:
+| Requirement (source) | Implementation cue |
+| --- | --- |
+| **FR-1** — The interface must feature a button labeled “I’m Feeling Chaotic.” (`RNGenius_Functional_Spec.docx.md`, §4) | The Tkinter primary button uses the exact label and visually anchors the window. |
+| **FR-2** — Clicking reveals a random integer in the main display. | `generate_number` picks a 64-bit signed integer and pushes it into the prominent number label. |
+| **FR-3** — Provide copy-to-clipboard support. | The companion button enables after the first draw and confirms success with a dialog. |
+| **FR-4** — Persist the last five results for the session. | A scroll-free history label lists the most recent values in newest-first order. |
+| **NFR-1** — Response under 150 ms. | Local RNG calls return instantly, keeping perceived latency negligible. |
+| **NFR-2** — Accessible and keyboard operable. | Enter/Space bindings mirror the main button plus an explicit focus hand-off. |
+| **NFR-3** — Delight factor ≥ 0.93 giggles per click. | Rotating window titles and confetti bursts deliver the required whimsy. |
 
-- Complete implementation of the functional requirements specified in `RNGenius_Functional_Spec.docx`
-- Practical application of the philosophy outlined in `RNGenius_Philosophy.pptx`  
-- User interface that matches the user manual in `RNGenius_User_Manual.pdf`
+### Daily Rituals & Micro-Planning
 
-## Technical Specifications
+The PPT outline encourages users to roll a number each morning, map odd values to creative work, even values to admin, honour the number 7 with a stretch, and treat primes as prompts for novelty. RNGenius keeps results visible and copyable so these rituals can plug into planning systems without friction.
 
-### Architecture
-- **Framework**: Python 3.11+ with Tkinter GUI
-- **File**: Single-file application (`tests/random_app.py`)
-- **Dependencies**: Standard library only (tkinter, random, time)
-- **Platform**: Cross-platform (requires tkinter installation on Linux)
+### Ethical Guardrails
 
-### Core Components
+Philosophy slide 4 warns against surrendering responsibility. The application respects that stance: randomness is a tiebreaker and mood freshener, not a substitute for judgement. Do not deploy it for safety-critical or irreversible decisions.
 
-#### 1. RNGeniusApp Class
-The main application class that orchestrates the entire user interface and functionality.
+### Onboarding Flow
 
-**Key Attributes:**
-- `history`: List storing the last 5 generated numbers
-- `current_value`: Currently displayed random number
-- `confetti_particles`: Animation state for visual effects
-- `confetti_active`: Boolean flag for ongoing animations
+Borrowing from the user manual PDF:
 
-#### 2. Random Number Generation
-- **Range**: 64-bit signed integers (`-2^63` to `2^63-1`)
-- **Method**: Python's `random.randint()` 
-- **Quality**: Cryptographically sufficient for entertainment purposes
+1. Launch the app and take a centring breath.
+2. Activate “I’m Feeling Chaotic.”
+3. Enjoy the confetti while your integer destiny materialises.
+4. Copy the value if you need it elsewhere (odd = adventurous, even = admin).
+5. Revisit the bottom history if you want to revisit recent draws.
 
-#### 3. User Interface Components
+## Technical Deep Dive
 
-**Main Button**: 
-- Label: "I'm Feeling Chaotic" (as per FR-1)
-- Style: Bold, eye-catching orange background (#f7b733)
-- Action: Generates new random number on click
+### Module Snapshot
 
-**Display Area**:
-- Large font display (Courier New, 28pt bold)
-- Supports long numbers with text wrapping
-- Central placement for optimal visibility
+- **Source**: `tests/random_app.py`
+- **Entry point**: `main()` constructs a `Tk` root and instantiates `RNGeniusApp`.
+- **Dependencies**: Standard library only (`tkinter`, `random`, `time`).
+- **Numerics**: Signed 64-bit range via `MIN_INT64 = -(2**63)` and `MAX_INT64 = 2**63 - 1`.
 
-**History Tracking**:
-- Shows last 5 results (as per FR-4)
-- Displays in chronological order (newest first)
-- Monospace font for number alignment
+### UI Composition
 
-**Copy Functionality**:
-- Dedicated "Copy to Clipboard" button
-- Disabled until first number is generated
-- Shows confirmation dialog on successful copy
+1. **Header Frame** — bold title plus a subtitle inviting entropy.
+2. **Display Stack** — a large Courier label for the number, backed by a canvas overlay reserved for confetti.
+3. **Control Bar** — grid-aligned action and copy buttons; the latter starts disabled.
+4. **History Panel** — monospace label reporting the latest five values, trimmed on update.
+5. **Global Bindings** — `<Return>` and `<space>` are routed to the generator, with the main button receiving initial focus.
 
-### Functional Requirements Implementation
+### Randomness & History Engine
 
-Based on the extracted specifications from `RNGenius_Functional_Spec.docx`:
+`generate_number` funnels directly into `random.randint(MIN_INT64, MAX_INT64)`, memoises the result, unlocks the copy button, and unshifts the value into `history`, slicing the list to at most five entries. The UI label mirrors this array, ensuring the state users see matches the data the tests assert against.
 
-| Requirement | Implementation Status | Details |
-|-------------|----------------------|---------|
-| **FR-1**: Display button "I'm Feeling Chaotic" | ✅ **Complete** | Exact label match, prominent placement |
-| **FR-2**: Show random integer on click | ✅ **Complete** | 64-bit signed range, instant display |
-| **FR-3**: Copy-to-clipboard action | ✅ **Complete** | Dedicated button with confirmation |
-| **FR-4**: Persist last 5 results | ✅ **Complete** | Session-based storage, chronological display |
+### Clipboard Workflow
 
-### Non-Functional Requirements
+`copy_to_clipboard` guards against empty state, clears the current clipboard, appends the latest number as text, and provides feedback via `messagebox.showinfo`, aligning with the user manual’s reassurance that an unwanted number can simply be rerolled.
 
-| Requirement | Implementation Status | Details |
-|-------------|----------------------|---------|
-| **NFR-1**: Response < 150ms | ✅ **Complete** | Instant local generation |
-| **NFR-2**: Accessibility features | ✅ **Complete** | Keyboard navigation (Enter/Space), focus management |
-| **NFR-3**: Delight factor ≥ 0.93 GPC | ✅ **Complete** | Confetti animation, dynamic window titles |
+### Confetti System
 
-### Philosophy Integration
+`_burst_confetti` seeds 80 particles (40 for overlapping bursts) near the canvas crown, each with velocity, colour, gravity, drag, and lifespan fields. `_animate_confetti` runs every ~16 ms to apply physics, bounce at the floor, shrink near expiration, and cull expired nodes. The particle palette matches the playful tone demanded by the delight requirement and signals success beyond the numeric output.
 
-The application embodies the principles from `RNGenius_Philosophy.pptx`:
+### Responsiveness & Layout
 
-1. **Decision Fatigue Relief**: Simple one-button operation
-2. **Micro-Planning Support**: Number generation suitable for decision-making workflows
-3. **Ethical Use Guidelines**: Entertainment-focused, not for critical decisions
-4. **Daily Ritual Support**: Quick, repeatable interaction pattern
+Window geometry defaults to 560×460, with a 520×420 minimum to preserve layout integrity during resizes. `_on_canvas_resize` keeps the confetti canvas colour synced with the surrounding theme so the animation blends seamlessly when themes change.
 
-## Features
+### Accessibility & Delight Mechanics
 
-### 1. Quantum-Adjacent Algorithmic Non-Determinism (Q.A.A.N.D.)
-Despite the grandiose name from the specification, this implements standard pseudorandom number generation suitable for entertainment and light decision-making.
+- Keyboard parity ensures power users and assistive tech receive equal functionality.
+- The rotating window titles double as textual feedback, delivering the promised Giggles Per Click metric.
+- Visual contrast (bold fonts, warm button palette) keeps the primary action discoverable, while the wrap-enabled number label accommodates lengthy integers without overflow.
 
-### 2. Visual Delight System
-- **Confetti Animation**: 80-particle burst on each generation
-- **Physics Simulation**: Gravity, air resistance, and boundary collision
-- **Dynamic Titles**: Randomized playful window titles
-- **Color Palette**: 8-color confetti system with smooth animation
+### Integration Hooks
 
-### 3. Accessibility Features
-- **Keyboard Support**: Enter and Space keys trigger generation
-- **Focus Management**: Proper tab order and keyboard navigation
-- **Clear Visual Hierarchy**: High contrast, readable fonts
-- **Responsive Layout**: Minimum window size constraints
+Because the fixture is stateful only in memory and avoids external dependencies, it is safe for automated demos, screenshot generation, or behavioural tests. Additional instrumentation (logging, analytics, exports) can be added around `generate_number` without disturbing the current experience.
 
-### 4. Session Persistence
-- Maintains history of last 5 numbers during application session
-- No permanent storage (by design, for test fixture usage)
-- Real-time history updates with each generation
+### Document Provenance
 
-## Installation & Usage
+Content here draws directly from Escarabajo-managed artifacts:
 
-### Prerequisites
-```bash
-# On Ubuntu/Debian systems
-sudo apt update && sudo apt install python3-tk
+- `.Escarabajo/kb/tests/data/RNGenius_Functional_Spec.docx.md`
+- `.Escarabajo/kb/tests/data/RNGenius_Philosophy.pptx.md`
+- `.Escarabajo/kb/tests/data/RNGenius_User_Manual.pdf.md`
 
-# On other Linux distributions, install the equivalent tkinter package
-```
-
-### Running the Application
-```bash
-# From the repository root
-cd /home/iwk/src/escarabajo
-uv run tests/random_app.py
-
-# Or directly with Python (after installing tkinter)
-python3 tests/random_app.py
-```
-
-### Usage Instructions (per User Manual)
-1. **Launch**: Open the application
-2. **Generate**: Click "I'm Feeling Chaotic" or press Enter/Space
-3. **Observe**: Watch the confetti and note your random number
-4. **Copy**: Use "Copy to Clipboard" for external use
-5. **History**: Review the last 5 numbers in the bottom panel
-
-## Testing Integration
-
-This application serves as a comprehensive test fixture for:
-
-- **Escarabajo Document Extraction**: Validates that extracted specs match implementation
-- **GUI Framework Testing**: Demonstrates cross-platform Tkinter functionality  
-- **Specification Compliance**: Proves requirements traceability from docs to code
-- **User Experience Validation**: Shows practical application of design philosophy
-
-## Confetti Animation Technical Details
-
-The confetti system demonstrates advanced GUI programming:
-
-```python
-# Physics simulation parameters
-particle = {
-    "x": origin_x, "y": origin_y,    # Position
-    "vx": vx, "vy": vy,              # Velocity vector
-    "g": 0.18,                        # Gravity acceleration
-    "drag": 0.995,                    # Air resistance factor
-    "life": 1.5,                      # Lifespan in seconds
-    "r": radius                       # Visual size
-}
-```
-
-- **Frame Rate**: ~60 FPS via 16ms timer intervals
-- **Particle Count**: 80 particles per burst (40 for subsequent bursts)
-- **Physics**: Realistic gravity, drag, and boundary collision
-- **Lifecycle**: 1.5-second lifespan with fade-out effects
-
-## Error Handling
-
-- **Clipboard Failures**: Graceful degradation with user notification
-- **Display Overflow**: Text wrapping for extremely long numbers
-- **Animation Cleanup**: Proper particle lifecycle management
-- **Window Resizing**: Dynamic canvas adjustment for confetti bounds
-
-## Code Quality Features
-
-- **Type Hints**: Clear parameter and return type annotations
-- **Documentation**: Comprehensive docstrings and comments
-- **Single Responsibility**: Clean separation of concerns
-- **Resource Management**: Proper cleanup of animation resources
-- **Cross-Platform**: Works on Windows, macOS, and Linux (with tkinter)
-
-## Development Notes
-
-This test fixture demonstrates:
-- **Requirements Traceability**: Direct mapping from specification documents to implementation
-- **Documentation-Driven Development**: Code that faithfully implements extracted requirements
-- **Test Data Generation**: Creates realistic user interaction patterns for testing
-- **GUI Best Practices**: Accessibility, responsiveness, and user delight
-
-## Related Files
-
-- **Specifications**: `.Escarabajo/kb/tests/data/RNGenius_Functional_Spec.docx.md`
-- **Philosophy**: `.Escarabajo/kb/tests/data/RNGenius_Philosophy.pptx.md`  
-- **User Manual**: `.Escarabajo/kb/tests/data/RNGenius_User_Manual.pdf.md`
-- **Source Code**: `tests/random_app.py`
-
----
-
-*This documentation was generated using Escarabajo document extraction tools to ensure consistency between specification documents and implementation.*
+These Markdown snippets were obtained via the `list_kb` registry and opened locally as instructed.

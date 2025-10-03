@@ -116,6 +116,10 @@ uv run pytest -q
 
 The suite covers extraction adapters, mapping logic, sync behaviours, and the CLI surface.
 
+## Example App & Documentation Flow
+
+The repository ships with a playful Tkinter fixture, `tests/random_app.py`, that demonstrates how Escarabajo keeps specifications and implementation aligned. If you want to see a fully worked example of turning those synced documents into narrative documentation, check out [`DOCUMENT_GENERATION.md`](DOCUMENT_GENERATION.md). It walks through syncing the knowledge base, pulling Markdown via `list-kb`, and drafting docs that start with a functional story before diving into the technical details.
+
 
 ## Principles of Participation
 
