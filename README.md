@@ -2,7 +2,7 @@
 
 Escarabajo (Scarab) is a local-first MCP server that keeps binary documents in sync with clean Markdown so downstream agents can search, summarise, and reason over source material. Every tool call blocks until the requested Markdown exists and is up to date, making Escarabajo a reliable path oracle rather than a generic file store.
 
-![Escarabajo logo](image/escarabajo.png)
+![Escarabajo logo](image/escarabajo-small.png)
 
 ## Highlights
 - Deterministic `.Escarabajo/kb/` cache with one-to-one `<source> → <source>.md` mapping
