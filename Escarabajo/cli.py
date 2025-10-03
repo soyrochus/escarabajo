@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict
 
+from .config import ensure_config, resolve_paths
 from .prompts import get_prompt, list_prompts
 from .sync import SyncManager
 
@@ -14,6 +15,14 @@ from .sync import SyncManager
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Escarabajo document synchroniser")
     sub = parser.add_subparsers(dest="command")
+
+    init = sub.add_parser("init", help="Initialise the Escarabajo workspace")
+    init.add_argument(
+        "-p",
+        "--path",
+        default=".",
+        help="Target directory (defaults to current working directory)",
+    )
 
     scan = sub.add_parser("scan", help="Scan the repository for supported documents")
     scan.add_argument("--globs", nargs="*", help="Glob patterns to include")
@@ -86,9 +95,24 @@ def main(argv: list[str] | None = None) -> int:
         parser.print_help()
         return 0
 
-    manager = SyncManager(Path.cwd())
-
     try:
+        if args.command == "init":
+            target = Path(args.path).expanduser()
+            if not target.is_absolute():
+                target = Path.cwd() / target
+            target.mkdir(parents=True, exist_ok=True)
+            config = ensure_config(target)
+            paths = resolve_paths(target, config)
+            payload = {
+                "config_dir": paths.config_dir.as_posix(),
+                "config_file": paths.config_file.as_posix(),
+                "kb_dir": paths.kb_root.as_posix(),
+            }
+            print(json.dumps(payload, indent=2))
+            return 0
+
+        manager = SyncManager(Path.cwd())
+
         if args.command == "scan":
             payload = manager.scan_repo(globs=args.globs, exclude_globs=args.exclude_globs)
             print(json.dumps(payload, indent=2))

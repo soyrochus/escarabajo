@@ -41,6 +41,11 @@ Escarabajo/
 
 ## CLI Quick Start
 ```bash
+# Initialise the workspace (current directory)
+escarabajo init
+# or target a specific path
+escarabajo init --path ./docs/project
+
 # Install in editable mode (optionals shown)
 uv pip install -e ".[pdf,ocr]"
 
