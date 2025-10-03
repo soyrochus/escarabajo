@@ -1,0 +1,23 @@
+[project]
+name = "escarabajo"
+version = "0.1.0"
+description = "An MCP server to support documentation generation"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pyyaml>=6",
+    "pypdf2>=3",
+]
+
+[project.optional-dependencies]
+ocr = [
+    "pytesseract>=0.3.10",
+]
+pdf = [
+    "pymupdf>=1.24",
+    "pdfminer.six>=20231228",
+]
+
+[project.scripts]
+Escarabajo = "Escarabajo.cli:main"
+escarabajo = "Escarabajo.cli:main"

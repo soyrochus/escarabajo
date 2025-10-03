@@ -1,0 +1,21 @@
+docx:
+  keep_tables: true
+exclude_globs:
+- .git/**
+- .Escarabajo/**
+- node_modules/**
+- '**/~$*'
+- '**/*.tmp'
+expose_content: false
+globs:
+- '**/*.docx'
+- '**/*.pptx'
+- '**/*.pdf'
+kb_dir: .Escarabajo/kb
+ocr: false
+pdf:
+  keep_figures_as_captions: true
+  page_delimiter: '--- page {n} ---'
+pptx:
+  slide_delimiter: '--- slide {n} ---'
+skip_unchanged: false
