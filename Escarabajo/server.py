@@ -8,15 +8,15 @@ dependencies installed.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Optional
 
 from .prompts import get_prompt, list_prompts
 from .sync import SyncManager
 
 try:  # pragma: no cover - optional dependency
-    from mcp.server.fastmcp import FastMCPServer  # type: ignore
+    from mcp.server.fastmcp import FastMCP
 except Exception:  # pragma: no cover
-    FastMCPServer = None  # type: ignore
+    FastMCP = None  # type: ignore
 
 
 ToolHandler = Callable[[Dict[str, Any]], Any]
@@ -94,7 +94,7 @@ class EscarabajoServer:
         return list_prompts()
 
     def _tool_get_prompt(self, payload: Dict[str, Any]) -> Any:
-        return get_prompt(payload["name"])
+        return get_prompt(payload["name"], params=payload.get("params"))
 
     def _tool_read_text(self, payload: Dict[str, Any]) -> Any:
         if "out" not in payload:
@@ -105,62 +105,164 @@ class EscarabajoServer:
 def create_server(repo_root: Path | None = None):
     """Create a server backed either by FastMCP or the simple wrapper."""
 
-    if FastMCPServer is None:
+    if FastMCP is None:
         return EscarabajoServer(repo_root)
 
     manager = SyncManager(repo_root or Path.cwd())
-    server = FastMCPServer("Escarabajo")
+    server = FastMCP(name="Escarabajo", instructions="Escarabajo synchronizes binary docs to Markdown.")
 
-    @server.tool("scan_repo")  # type: ignore[attr-defined]
-    def scan_repo(payload: Dict[str, Any]) -> Any:
-        return manager.scan_repo(
-            globs=payload.get("globs"),
-            exclude_globs=payload.get("exclude_globs"),
-        )
+    @server.tool()
+    def scan_repo(
+        globs: list[str] | None = None,
+        exclude_globs: list[str] | None = None
+    ) -> Any:
+        """Scan repository for extractable documents (DOCX, PPTX, PDF).
+        
+        Args:
+            globs: File patterns to include (default: ["**/*.docx", "**/*.pptx", "**/*.pdf"])
+            exclude_globs: File patterns to exclude (default: [".git/**", "node_modules/**"])
+            
+        Returns:
+            Dictionary with list of discovered files
+        """
+        return manager.scan_repo(globs=globs, exclude_globs=exclude_globs)
 
-    @server.tool("sync_all")  # type: ignore[attr-defined]
-    def sync_all(payload: Dict[str, Any]) -> Any:
-        return manager.sync_all(
-            globs=payload.get("globs"),
-            exclude_globs=payload.get("exclude_globs"),
-            ocr=payload.get("ocr"),
-        )
+    @server.tool()
+    def sync_all(
+        globs: list[str] | None = None,
+        exclude_globs: list[str] | None = None,
+        ocr: bool = False
+    ) -> Any:
+        """Extract content from all discovered documents into Markdown format.
+        
+        Args:
+            globs: File patterns to include
+            exclude_globs: File patterns to exclude  
+            ocr: Enable OCR for scanned PDFs
+            
+        Returns:
+            Summary of processing results with counts and output paths
+        """
+        return manager.sync_all(globs=globs, exclude_globs=exclude_globs, ocr=ocr)
 
-    @server.tool("sync_paths")  # type: ignore[attr-defined]
-    def sync_paths(payload: Dict[str, Any]) -> Any:
-        return manager.sync_paths(payload.get("paths", []), ocr=payload.get("ocr"))
+    @server.tool()
+    def sync_paths(
+        paths: list[str],
+        ocr: bool = False
+    ) -> Any:
+        """Extract content from specific document files.
+        
+        Args:
+            paths: List of file paths to process
+            ocr: Enable OCR for scanned PDFs
+            
+        Returns:
+            Processing results for each file
+        """
+        return manager.sync_paths(paths, ocr=ocr)
 
-    @server.tool("get_text_path")  # type: ignore[attr-defined]
-    def get_text_path(payload: Dict[str, Any]) -> Any:
-        return manager.get_text_path(payload["src"], ocr=payload.get("ocr"))
+    @server.tool()
+    def get_text_path(
+        src: str,
+        ocr: bool = False
+    ) -> Any:
+        """Get the extracted Markdown path for a source document, ensuring extraction is complete.
+        
+        Args:
+            src: Source document path (relative to repository root)
+            ocr: Enable OCR for scanned PDFs
+            
+        Returns:
+            Dictionary with the output Markdown file path
+        """
+        return manager.get_text_path(src, ocr=ocr)
 
-    @server.tool("list_kb")  # type: ignore[attr-defined]
-    def list_kb(payload: Dict[str, Any]) -> Any:  # pylint: disable=unused-argument
+    @server.tool()
+    def list_kb() -> Any:
+        """List all extracted documents in the knowledge base.
+        
+        Returns:
+            Dictionary with list of available knowledge base items
+        """
         return manager.list_kb()
 
-    @server.tool("purge_outputs")  # type: ignore[attr-defined]
-    def purge_outputs(payload: Dict[str, Any]) -> Any:
-        return manager.purge_outputs(globs=payload.get("globs"))
+    @server.tool()
+    def purge_outputs(
+        globs: list[str] | None = None
+    ) -> Any:
+        """Delete generated Markdown files to force re-extraction.
+        
+        Args:
+            globs: File patterns to delete (default: all generated files)
+            
+        Returns:
+            List of deleted files
+        """
+        return manager.purge_outputs(globs=globs)
 
-    @server.tool("config_get")  # type: ignore[attr-defined]
-    def config_get(payload: Dict[str, Any]) -> Any:  # pylint: disable=unused-argument
+    @server.tool()
+    def config_get() -> Any:
+        """Get current Escarabajo configuration.
+        
+        Returns:
+            Current configuration settings
+        """
         return manager.config_get()
 
-    @server.tool("config_set")  # type: ignore[attr-defined]
-    def config_set(payload: Dict[str, Any]) -> Any:
-        return manager.config_set(payload or {})
+    @server.tool()
+    def config_set(
+        updates: Optional[dict[str, Any]] = None
+    ) -> Any:
+        """Update Escarabajo configuration settings.
+        
+        Args:
+            updates: Configuration settings to update
+            
+        Returns:
+            Updated configuration
+        """
+        return manager.config_set(updates or {})
 
-    @server.tool("list_prompts")  # type: ignore[attr-defined]
-    def tool_list_prompts(payload: Dict[str, Any]) -> Any:  # pylint: disable=unused-argument
+    @server.tool()
+    def list_prompts() -> Any:
+        """List available analysis prompt templates.
+        
+        Returns:
+            Dictionary with available prompt names
+        """
         return list_prompts()
 
-    @server.tool("get_prompt")  # type: ignore[attr-defined]
-    def tool_get_prompt(payload: Dict[str, Any]) -> Any:
-        return get_prompt(payload["name"])
+    @server.tool()
+    def get_prompt(
+        name: str,
+        params: Optional[dict[str, Any]] = None
+    ) -> Any:
+        """Get a specific analysis prompt template.
+        
+        Args:
+            name: Name of the prompt template
+            params: Optional parameters for the prompt template
+            
+        Returns:
+            Dictionary with the prompt template
+        """
+        return get_prompt(name, params=params)
 
-    @server.tool("read_text")  # type: ignore[attr-defined]
-    def tool_read_text(payload: Dict[str, Any]) -> Any:
-        return manager.read_text(payload["out"], max_bytes=payload.get("max_bytes"))
+    @server.tool()
+    def read_text(
+        out: str,
+        max_bytes: int | None = None
+    ) -> Any:
+        """Read content from an extracted Markdown file.
+        
+        Args:
+            out: Path to the extracted Markdown file
+            max_bytes: Maximum bytes to read (optional)
+            
+        Returns:
+            Dictionary with file content and metadata
+        """
+        return manager.read_text(out, max_bytes=max_bytes)
 
     return server
 
